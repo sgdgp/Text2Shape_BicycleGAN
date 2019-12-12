@@ -28,7 +28,7 @@ class S2T_G(nn.Module):
         self.lstm = nn.LSTM(300,256,num_layers=1, bidirectional=False, batch_first=True)
         self.linear1 = nn.Linear(256, config.num_vocab)
         self.config = config
-        self.max_time_steps = 10
+        # self.max_time_steps = 10
 
     def sample_gumbel(self,shape, eps=1e-20):
         U = torch.rand(shape).cuda()
@@ -51,10 +51,16 @@ class S2T_G(nn.Module):
         y_hard = y_hard.view(*shape)
         return (y_hard - y).detach() + y
 
-    def forward(self,input,vocab_embedding):
-        # print("S2T")
+    def forward(self,input,vocab_embedding, max_time_steps):
+        # print(max_time_steps)
+        # print(max_time_steps.get_device())
+        # import sys
+        # sys.exit()
+        vocab_embedding = vocab_embedding.squeeze(0)
+        max_time_steps = int(max_time_steps.squeeze(0).item())
+        # print("S2T_G")
         batch_size = input.size()[0]
-        # print("Input : ", input.size())
+        # print("Input : ", input)
 
         latent = self.latent_net(input)
         # print("Latent : ", latent.size())
@@ -66,8 +72,15 @@ class S2T_G(nn.Module):
         decoder_input = torch.from_numpy(self.config.bos_embedding).float().to(self.config.device)
         decoder_input = decoder_input.view(1,1,decoder_input.size()[-1])
         decoder_input = decoder_input.repeat(batch_size, 1 ,1)
+
+        # print(decoder_input.size())
+        # import sys
+        # sys.exit()
+
         all_outs=[]
-        for t in range(self.max_time_steps):
+        self.lstm.flatten_parameters()
+
+        for t in range(max_time_steps):
             # print("decoder input :", decoder_input.size())
             # print("decoder hidden : ", decoder_hidden.size())
             # print("decoder cell : ", decoder_cell.size())
@@ -80,6 +93,11 @@ class S2T_G(nn.Module):
             gumbled = self.gumbel_softmax(logits)
             # print("Gumbled : ", gumbled.size())
             # print("vocab : ", vocab_embedding.size())
+
+            # print("gumbled :", gumbled.size())
+            # print("vocab_embedding : ", vocab_embedding.size())
+            # import sys
+            # sys.exit()
             decoder_input = torch.matmul(gumbled.detach(), vocab_embedding.detach())
             decoder_input = decoder_input.detach()
             decoder_input = decoder_input.view(batch_size,1,decoder_input.size()[-1])

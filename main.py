@@ -7,6 +7,7 @@ from test import *
 import torch
 import random
 import numpy as np
+import sys
 
 def main():
     # set seeds
@@ -31,10 +32,17 @@ def main():
     conf.bos_embedding = np.random.normal(scale=0.6, size=(conf.embedding_dim, ))
 
     model = T2S_CycleGAN(conf, primitive_dataset)
-    # trainer = Trainer(model,conf,primitive_dataset)
+    
+    train_flag = True if str(sys.argv[1]).lower() == "train" else False
+    if train_flag:
+        # if os.path.exists(conf.model_path):
+        #     print("Loading model ...")
+        #     model.load_state_dict(torch.load(conf.model_path))
 
-    tester = Tester(model,conf,primitive_dataset)
-    tester.get_shape_prediction()
+        trainer = Trainer(model,conf,primitive_dataset)
+    else:
+        tester = Tester(model,conf,primitive_dataset)
+        tester.get_shape_prediction()
 
     
 

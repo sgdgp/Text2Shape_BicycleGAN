@@ -191,7 +191,7 @@ class PrimitiveDataset:
         for i in range(len(self.test_samples)):
             yield self.test_samples[i * self.config.test_batch_size : (i+1)* self.config.test_batch_size]
     
-    
+    # def generate_batches_discriminator
 
 
 

@@ -14,14 +14,29 @@ class Tester:
         self.data = data
         
         self.model.eval()
-        self.model.load_state_dict(torch.load(self.config.model_path))
+        self.model.load_state_dict(torch.load(self.config.model_path), strict=False)
 
     def get_shape_prediction(self):
+        self.model.eval()
+        self.model.set_eval()
+
+
         test_data_generator = self.data.generate_batches_test()
-        for b in range(10):
+        b = 0
+
+        f = open(self.config.output_folder + "text_gt_outputs.txt", "w")
+
+        while True:
+            if b==500:
+                break
             test_data = next(test_data_generator)
             test_data_desc = [i[0] for i in test_data]
             voxel_file = [i[1] for i in test_data]
+
+
+            if "black" in voxel_file[0]:
+                continue
+            
             # print(test_data)
             # print(test_data_desc)
             # print(voxel_file)
@@ -39,9 +54,17 @@ class Tester:
             real_s = self.model.real_s.detach().cpu().numpy()
             fake_s = self.model.fake_s.detach().cpu().numpy()
             real_t = self.model.real_t.detach().cpu().numpy()
+            fake_t = self.model.rec_t.detach().cpu().numpy()
 
-            print(fake_s)
-            '''
+            print(fake_s.any()>0 and fake_s.any()<=255)
+            print(real_s.any()>0 and real_s.any()<=255)
+            # print(voxel)
+            # print(voxel_file)
+            # break
+            
+            # real_s /= 255.
+            # fake_s /= 255.
+
             for id in range(real_s.shape[0]):
 
                 # get pngs
@@ -50,9 +73,22 @@ class Tester:
                 # f3 = write_text_to_png(real_t[id], self.data.id2word, self.config.output_folder)
 
                 # stick together pngs and write to output folder
+                
+                print(f1)
+                print(f2)
+                
+                text_gt = get_text_from_ids(real_t[0], self.data.id2word, 1)
+                text_fake = get_text_from_ids(fake_t[0], self.data.id2word, 0)
+
+                f.write("output_" +str(int(b*self.config.test_batch_size)+id) +"\t" +text_gt + "\t" + text_fake + "\n")
+
                 merge_and_write_to_output_folder([f1,f2],self.config.output_folder+"output_"+str(int(b*self.config.test_batch_size)+id)+".png")
 
                 #clear temp files
-                remove_temp_files([f1,f2])
+                # remove_temp_files([f1,f2])
 
-            '''
+            # break
+            
+            b += 1
+
+        f.close()

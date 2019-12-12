@@ -7,7 +7,19 @@ import os
 
 def get_voxel_from_file(nrrd_filename):
     nrrd_tensor, options = nrrd.read(nrrd_filename)
-    voxel_tensor = nrrd_tensor.astype(np.float32) / 255.
+    # print(nrrd_filename)
+    # print("Inside get_voxel_from_file")
+    # print(options)
+    # print(nrrd_tensor)
+    voxel_tensor = nrrd_tensor.astype(np.float32) 
+    # print(voxel_tensor)
+    
+    voxel_tensor /= 255.
+
+    # print(voxel_tensor)
+    # import sys
+    # sys.exit()
+
     voxel_tensor = np.rollaxis(voxel_tensor, 0, 4)
     voxel_tensor = np.swapaxes(voxel_tensor, 0, 1)
     voxel_tensor = np.swapaxes(voxel_tensor, 0, 2)
@@ -51,6 +63,19 @@ def merge_and_write_to_output_folder(f_list,output_filename):
 def remove_temp_files(f_list):
     for f in f_list:
         os.remove(f)
+
+
+def get_text_from_ids(id_list, d, flag):
+    l = []
+    # print(id_list)
+    for id in id_list:
+        if flag :
+            l.append(d[int(id)])
+        else :
+            l.append(d[int (np.argmax(id))])
+    
+    return str(" ".join(l))
+
 
 
 

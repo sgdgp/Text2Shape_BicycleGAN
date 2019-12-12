@@ -28,11 +28,13 @@ class T2S_D(nn.Module):
     def forward(self, input):
         """Standard forward."""
         # print("T2S_D")
-        # print(input.shape)
+        # print("input = ", input)
         out = self.net(input)
         out = out.view(input.size(0), -1)
-        out = F.tanh(self.linear1(out))
+        out = F.relu(self.linear1(out))
+        # out = torch.sigmoid(self.linear2(out))
+        # out = F.relu(self.linear2(out))
         out = self.linear2(out)
-        # print(out)
+        # print("out = ", out)
         # print(out.shape)
         return out

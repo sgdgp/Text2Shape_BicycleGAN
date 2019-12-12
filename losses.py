@@ -105,7 +105,7 @@ class GANLoss(nn.Module):
     that has the same size as the input.
     """
 
-    def __init__(self, gan_mode="lsgan", target_real_label=1.0, target_fake_label=0.0):
+    def __init__(self, gan_mode="wgangp", target_real_label=1.0, target_fake_label=0.0):
         """ Initialize the GANLoss class.
         Parameters:
             gan_mode (str) - - the type of GAN objective. It currently supports vanilla, lsgan, and wgangp.
@@ -152,12 +152,19 @@ class GANLoss(nn.Module):
         """
         if self.gan_mode in ['lsgan', 'vanilla']:
             target_tensor = self.get_target_tensor(prediction, target_is_real)
+            # print("GAN loss __call__")
+            # print("prediction")
+            # print (prediction)
+            # print("target")
+            # print(target_tensor)
             loss = self.loss(prediction, target_tensor)
+            # print("loss ")
+            # print(loss)
         elif self.gan_mode == 'wgangp':
             if target_is_real:
-                loss = -prediction.mean()
-            else:
                 loss = prediction.mean()
+            else:
+                loss = -prediction.mean()
         return loss
 
 

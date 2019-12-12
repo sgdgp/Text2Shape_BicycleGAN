@@ -18,16 +18,25 @@ class S2T_D(nn.Module):
         
     def forward(self, input, vocab_embedding):
         """Standard forward."""
+        vocab_embedding = vocab_embedding.squeeze(0)
         # print("S2T_D")
         # print(input.size())
         if  len(input.size()) == 3 : # B x T x V
             x = torch.matmul(input, vocab_embedding)
         else:
+            # print(input)
+            # print(input.size())
             x = F.one_hot(input, num_classes=vocab_embedding.size()[0]).float()
             x = torch.matmul(x,vocab_embedding)
+        
+        # print("x = ", x)
+        self.lstm.flatten_parameters()
         out,(hidden,cell) = self.lstm(x)
         hidden = hidden.squeeze(0).unsqueeze(1)
-        score = self.linear2(self.linear1(hidden))
-
+        # print("hidden = ", hidden)
+        # score = F.relu(self.linear2(F.relu(self.linear1(hidden))))
+        score = self.linear2(F.relu(self.linear1(hidden)))
+        # score = torch.sigmoid(self.linear2(F.relu(self.linear1(hidden))))
+        # print("score  ", score)
         # print(score.size())
         return score
